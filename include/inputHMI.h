@@ -1,6 +1,6 @@
-#ifndef inputHMI_H
-#define inputHMI_H
+#ifndef INPUT_HMI_H
+#define INPUT_HMI_H
 
-void mainInputHMI();
+void mainInputHMI(int*);
 
 #endif

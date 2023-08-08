@@ -1,7 +1,10 @@
 
-all: bin/main
+all: bin/main bin/output
 
-bin/main: obj/main.o obj/inputHMI.o
+bin/main: obj/main.o obj/inputHMI.o obj/utils.o
+	cc -o $@ $^
+
+bin/output: obj/outputHMI.o obj/utils.o
 	cc -o $@ $^
 
 obj/%.o: src/%.c

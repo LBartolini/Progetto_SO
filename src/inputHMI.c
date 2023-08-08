@@ -13,12 +13,34 @@
 
 #include "definitions.h"
 #include "inputHMI.h"
+#include "utils.h"
+
+char string[20];
+int pipeECU;
+
+void termHandler(int sig);
 
 void mainInputHMI(int* pipe){
-    for(int i=0; i<2; i++){
-        write(pipe[WRITE], "pippo", 6);
+    pipeECU = pipe[WRITE];
+    signal(SIGTERM, termHandler);
+
+    while(1){
+        printf("\n:>");
+        scanf("%s", string);
+
+        if(strcmp(string, "INIZIO")==0 || strcmp(string, "ARRESTO")==0 || strcmp(string, "PARCHEGGIO")==0){
+            writeLine(pipeECU, string);
+            kill(getppid(), SIGUSR1);
+        }else{
+            printf("Comando non valido!\n");
+        }
     }
 
-    close(pipe[WRITE]);
+    close(pipeECU);
+    exit(0);
+}
+
+void termHandler(int sig){
+    close(pipeECU);
     exit(0);
 }
