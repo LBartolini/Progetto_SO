@@ -12,55 +12,52 @@
 #include <signal.h>
 
 #include "definitions.h"
-#include "inputHMI.h"
 #include "utils.h"
+#include "IHMI.h"
+#include "BBW.h"
+#include "PA.h"
+#include "SBW.h"
+#include "TC.h"
+#include "FWC.h"
 
 int velocita;
-int mode;
 int pipeInputHMI[2];
-
-int logECU;
+int mainSocket;
+struct Componente componenti[NUM_COMPONENTI];
 
 void inputHandler(int sig);
 void setupLogFiles();
 void centralECU();
+void initProcesses();
 
 int main(int argc, char *argv[])
 {
+    int mode;
     signal(SIGUSR1, inputHandler);
-    setupLogFiles();
 
-    logECU = open(ECU_LOG, O_WRONLY);
-    if(logECU == -1) exit(0);
-
-    /*
     if(strcmp(argv[1], "NORMALE")==0){
-        mod=NORMALE;
+        mode=NORMALE;
     }else if(strcmp(argv[1], "ARTIFICIALE")==0){
-        mod=ARTIFICIALE;
+        mode=ARTIFICIALE;
     }
-    */
+    mainSocket = initServerSocket("main");
+    initProcesses(mode);
 
-    pipe(pipeInputHMI);
-    if (fork() == 0){ // inizializzazione HMI Input
-        close(pipeInputHMI[READ]);
-        mainInputHMI(pipeInputHMI);
-        exit(0);
-    }
-    close(pipeInputHMI[WRITE]);
+    // TODO: connessioni fra processi e socket centrale
     
     centralECU();
     
+    close(mainSocket);
     close(pipeInputHMI[READ]);
     return 0;
 }
 
 void inputHandler(int sig){
-    writeLine(logECU, "sigusr1 ricevuto");
     char message[12];
     memset(message, 0, sizeof message);
     readLine(pipeInputHMI[READ], message);
-    writeLine(logECU, message);
+
+    // TODO
 }
 
 int createLog(char *path)
@@ -79,23 +76,85 @@ void setupLogFiles(){
     remove(THROTTLE_LOG);
     remove(BRAKE_LOG);
     remove(CAMERA_LOG);
-    remove(RADAR_LOG);
     remove(ASSIST_LOG);
-    remove(CAMERAS_LOG);
 
     if(!(createLog(ECU_LOG) &&
             createLog(STEER_LOG) &&
             createLog(THROTTLE_LOG) &&
             createLog(BRAKE_LOG) &&
             createLog(CAMERA_LOG) &&
-            createLog(RADAR_LOG) &&
-            createLog(ASSIST_LOG) &&
-            createLog(CAMERAS_LOG))){
+            createLog(ASSIST_LOG))){
         exit(0);
     }
 }
 
+void setupComponent(int pos, int pid, char* nome){
+    strcpy(componenti[pos].nome, nome);
+    componenti[pos].pid = pid;
+    memset(componenti[pos].buffer, 0, sizeof componenti[pos].buffer);
+}
+
+void initProcesses(int mode){
+    int pid;
+    setupLogFiles();
+
+    // inizializzazione HMI Input
+    pipe(pipeInputHMI);
+    pid = fork();
+    if (pid == 0){ 
+        close(pipeInputHMI[READ]);
+        mainInputHMI(pipeInputHMI);
+        exit(0);
+    }else if(pid < 0) exit(0);
+    close(pipeInputHMI[WRITE]);
+    setupComponent(IHMI, pid, "INP"); // input (hmi)
+
+    // inizializzazione BrakeByWire
+    pid = fork();
+    if (pid == 0){ 
+        mainBrakeByWire();
+        exit(0);
+    }else if(pid < 0) exit(0);
+    setupComponent(BBW, pid, "BBW"); // brake by wire
+
+    // inizializzazione FrontWindshieldCamera
+    pid = fork();
+    if (pid == 0){ 
+        mainFrontWindshieldCamera();
+        exit(0);
+    }else if(pid < 0) exit(0);
+    setupComponent(FWC, pid, "FWC"); // front windshield camera
+
+    // inizializzazione ParkAssist
+    pid = fork();
+    if (pid == 0){ 
+        mainParkAssist(mode);
+        exit(0);
+    }else if(pid < 0) exit(0);
+    setupComponent(PA, pid, "PAC"); // park assist component
+
+    // inizializzazione SteerByWire
+    pid = fork();
+    if (pid == 0){ 
+        mainSteerByWire();
+        exit(0);
+    }else if(pid < 0) exit(0);
+    setupComponent(SBW, pid, "SBW"); // steer by wire
+
+    // inizializzazione ThrottleControl
+    pid = fork();
+    if (pid == 0){ 
+        mainThrottleControl();
+        exit(0);
+    }else if(pid < 0) exit(0);
+    setupComponent(TC, pid, "TCC"); // throttle control component
+
+}
+
 void centralECU(){
+    int log = open(ECU_LOG, O_WRONLY);
+    if(log == -1) exit(0);
+
     while(1){}
 }
 

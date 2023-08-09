@@ -12,7 +12,7 @@
 #include <signal.h>
 
 #include "definitions.h"
-#include "inputHMI.h"
+#include "IHMI.h"
 #include "utils.h"
 
 char string[20];
@@ -35,9 +35,7 @@ void mainInputHMI(int* pipe){
             printf("Comando non valido!\n");
         }
     }
-
     close(pipeECU);
-    exit(0);
 }
 
 void termHandler(int sig){

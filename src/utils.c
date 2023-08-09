@@ -4,7 +4,12 @@
 #include <string.h>
 #include <fcntl.h>
 #include <ctype.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+
 #include "utils.h"
+#include "definitions.h"
 
 int writeLine(int fd, char *string)
 {
@@ -41,4 +46,62 @@ void readLineFromIndex(int fd, char *str, int *index) {
             exit(0);
         }
     } while (n > 0 && *str++ != '\0');
+}
+
+void sendData(int fd, char *msg){
+    int result;
+    result = write(fd, msg, strlen(msg) + 1);
+    if (result < 0) exit(1);
+}
+
+int initServerSocket(char *name){
+    int centralFd;
+    socklen_t centralLen;
+    struct sockaddr_un centralAddr;
+    centralLen = sizeof(centralAddr);
+    centralFd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (centralFd < 0) exit(0);
+    centralAddr.sun_family = AF_UNIX;
+    strcpy(centralAddr.sun_path, name);
+    unlink(centralAddr.sun_path);
+    if (bind(centralFd, (struct sockaddr *)&centralAddr, centralLen) < 0) exit(0);
+    if (listen(centralFd, NUM_COMPONENTI) < 0) exit(0);
+
+    return centralFd;
+}
+
+int connectToServer(char *name){
+    int clientFd, serverLen, result;
+    struct sockaddr_un serverUNIXAddress;
+    struct sockaddr *serverSockAddrPtr;
+    serverSockAddrPtr = (struct sockaddr *)&serverUNIXAddress;
+    serverLen = sizeof(serverUNIXAddress);
+    clientFd = socket(AF_UNIX, SOCK_STREAM, 0);
+    serverUNIXAddress.sun_family = AF_UNIX;
+    strcpy(serverUNIXAddress.sun_path, name);
+    do{
+        result = connect(clientFd, serverSockAddrPtr, serverLen);
+        if (result == -1) 
+            sleep(1);
+    } while (result == -1);
+
+    return clientFd;
+}
+
+struct CompConnection connectToComponent(int centralFd){
+    struct CompConnection c;
+    int clientFd;
+    socklen_t clientLen;
+    struct sockaddr_un clientAddr;
+    clientLen = sizeof(clientAddr);
+    clientFd = accept(centralFd, (struct sockaddr *)&clientAddr, &clientLen);
+    if (clientFd < 0) exit(0);
+
+    char buffer[1024];
+    memset(buffer, 0, sizeof buffer);
+    while (readLine(clientFd, buffer) <= 0) sleep(1);
+    strcpy(c.nome, buffer);
+    c.fd = clientFd;
+
+    return c;
 }
