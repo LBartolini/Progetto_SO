@@ -9,7 +9,6 @@ struct CompConnection{
 int writeLine(int, char*);
 int readLine(int, char*);
 void readLineFromIndex(int, char*, int*);
-void sendData(int, char*);
 int initServerSocket(char*);
 int connectToServer(char*);
 struct CompConnection connectToComponent(int);

@@ -16,5 +16,13 @@
 #include "utils.h"
 
 void mainFrontWindshieldCamera(){
+    int sock, logFWC;
 
+    logFWC = open(FWC_LOG, O_WRONLY);
+    if(logFWC == -1) exit(0);
+
+    writeLine(logFWC, "Connessione alla ECU");
+    sock = connectToServer(CENTRAL_SOCKET);
+    writeLine(sock, FWC);
+    writeLine(logFWC, "Connessione stabilita con successo");
 }

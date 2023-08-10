@@ -16,5 +16,14 @@
 #include "utils.h"
 
 void mainParkAssist(int mode){
+    int sock, logPA;
+
+    logPA = open(PA_LOG, O_WRONLY);
+    if(logPA == -1) exit(0);
+
+    writeLine(logPA, "Connessione alla ECU");
+    sock = connectToServer(CENTRAL_SOCKET);
+    writeLine(sock, PA);
+    writeLine(logPA, "Connessione stabilita con successo");
 
 }

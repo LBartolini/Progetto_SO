@@ -4,14 +4,16 @@
 #define READ 0
 #define WRITE 1
 
+#define CENTRAL_SOCKET "main"
+
 // componenti
 #define NUM_COMPONENTI 6
-#define IHMI 0
-#define BBW 1
-#define FWC 2
-#define PA 3
-#define SBW 4
-#define TC 5
+#define N_IHMI 0
+#define N_BBW 1
+#define N_FWC 2
+#define N_PA 3
+#define N_SBW 4
+#define N_TC 5
 
 // modalità di avvio
 #define NORMALE 0
@@ -26,12 +28,11 @@
 
 // log
 #define ECU_LOG "log/ECU.log" 
-#define STEER_LOG "log/steer.log" 
-#define THROTTLE_LOG "log/throttle.log" 
-#define BRAKE_LOG "log/brake.log" 
-#define CAMERA_LOG "log/camera.log" 
-#define CAR_SPEED "log/car_speed"
-#define ASSIST_LOG "log/assist.log" 
+#define SBW_LOG "log/SBW.log" 
+#define TC_LOG "log/TC.log" 
+#define BBW_LOG "log/BBW.log" 
+#define FWC_LOG "log/FWC.log" 
+#define PA_LOG "log/PA.log" 
 
 // componente
 struct Componente{

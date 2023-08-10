@@ -16,5 +16,13 @@
 #include "utils.h"
 
 void mainThrottleControl(){
+    int sock, logTC;
 
+    logTC = open(TC_LOG, O_WRONLY);
+    if(logTC == -1) exit(0);
+
+    writeLine(logTC, "Connessione alla ECU");
+    sock = connectToServer(CENTRAL_SOCKET);
+    writeLine(sock, TC);
+    writeLine(logTC, "Connessione stabilita con successo");
 }

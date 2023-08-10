@@ -11,8 +11,7 @@
 #include "utils.h"
 #include "definitions.h"
 
-int writeLine(int fd, char *string)
-{
+int writeLine(int fd, char *string){
     size_t len = strlen(string);
     char *newstr = malloc(len + 2);
     strcpy(newstr, string);
@@ -21,8 +20,7 @@ int writeLine(int fd, char *string)
     return write(fd, newstr, len + 1);
 }
 
-int readLine(int fd, char *string)
-{
+int readLine(int fd, char *string){
     int n;
     while (1)
     {
@@ -46,12 +44,6 @@ void readLineFromIndex(int fd, char *str, int *index) {
             exit(0);
         }
     } while (n > 0 && *str++ != '\0');
-}
-
-void sendData(int fd, char *msg){
-    int result;
-    result = write(fd, msg, strlen(msg) + 1);
-    if (result < 0) exit(1);
 }
 
 int initServerSocket(char *name){
@@ -89,7 +81,7 @@ int connectToServer(char *name){
 }
 
 struct CompConnection connectToComponent(int centralFd){
-    struct CompConnection c;
+    struct CompConnection* c;
     int clientFd;
     socklen_t clientLen;
     struct sockaddr_un clientAddr;
@@ -100,8 +92,10 @@ struct CompConnection connectToComponent(int centralFd){
     char buffer[1024];
     memset(buffer, 0, sizeof buffer);
     while (readLine(clientFd, buffer) <= 0) sleep(1);
-    strcpy(c.nome, buffer);
-    c.fd = clientFd;
 
-    return c;
+    c = malloc(sizeof (struct CompConnection));
+    strcpy((*c).nome, buffer);
+    (*c).fd = clientFd;
+
+    return *c;
 }

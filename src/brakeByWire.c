@@ -16,5 +16,14 @@
 #include "utils.h"
 
 void mainBrakeByWire(){
+    int sock, logBBW;
+
+    logBBW = open(BBW_LOG, O_WRONLY);
+    if(logBBW == -1) exit(0);
+
+    writeLine(logBBW, "Connessione alla ECU");
+    sock = connectToServer(CENTRAL_SOCKET);
+    writeLine(sock, BBW);
+    writeLine(logBBW, "Connessione stabilita con successo");
 
 }
