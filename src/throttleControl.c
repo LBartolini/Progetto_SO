@@ -15,8 +15,12 @@
 #include "TC.h"
 #include "utils.h"
 
+int sock, logTC;
+
+void termHandlerTC(int);
+
 void mainThrottleControl(){
-    int sock, logTC;
+    signal(SIGTERM, termHandlerTC);
 
     logTC = open(TC_LOG, O_WRONLY);
     if(logTC == -1) exit(0);
@@ -25,4 +29,12 @@ void mainThrottleControl(){
     sock = connectToServer(CENTRAL_SOCKET);
     writeLine(sock, TC);
     writeLine(logTC, "Connessione stabilita con successo");
+
+    termHandlerTC(0);
+}
+
+void termHandlerTC(int sig){
+    close(sock);
+    close(logTC);
+    exit(0);
 }

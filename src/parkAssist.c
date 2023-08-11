@@ -15,9 +15,12 @@
 #include "PA.h"
 #include "utils.h"
 
-void mainParkAssist(int mode){
-    int sock, logPA;
+int sock, logPA;
 
+void termHandlerPA(int);
+
+void mainParkAssist(int mode){
+    signal(SIGTERM, termHandlerPA);
     logPA = open(PA_LOG, O_WRONLY);
     if(logPA == -1) exit(0);
 
@@ -26,4 +29,12 @@ void mainParkAssist(int mode){
     writeLine(sock, PA);
     writeLine(logPA, "Connessione stabilita con successo");
 
+
+    termHandlerPA(0);
+}
+
+void termHandlerPA(int sig){
+    close(sock);
+    close(logPA);
+    exit(0);
 }

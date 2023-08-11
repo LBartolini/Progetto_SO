@@ -12,5 +12,6 @@ void readLineFromIndex(int, char*, int*);
 int initServerSocket(char*);
 int connectToServer(char*);
 struct CompConnection connectToComponent(int);
+int sendMessage(int, char*, char*);
 
 #endif

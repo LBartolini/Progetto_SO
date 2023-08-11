@@ -20,21 +20,21 @@
 #include "TC.h"
 #include "FWC.h"
 
-int velocita;
-int _log;
+int velocita, parking, sospeso;
+int _log, mainSocket;
 int pipeInputHMI[2];
-int mainSocket;
 struct Componente componenti[NUM_COMPONENTI];
 
-void inputHandler(int sig);
+void inputHandler(int);
+void termHandler(int);
 void setupLogFiles();
 void centralECU();
-void initProcesses();
+void initProcesses(int);
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]){
     int mode;
     signal(SIGUSR1, inputHandler);
+    signal(SIGTERM, termHandler);
 
     if(strcmp(argv[1], "NORMALE")==0){
         mode=NORMALE;
@@ -49,9 +49,7 @@ int main(int argc, char *argv[])
     
     centralECU();
     
-    close(mainSocket);
-    close(pipeInputHMI[READ]);
-    return 0;
+    termHandler(0);
 }
 
 void inputHandler(int sig){
@@ -59,10 +57,18 @@ void inputHandler(int sig){
     memset(message, 0, sizeof message);
     readLine(pipeInputHMI[READ], message);
     writeLine(_log, message);
+
+    // TODO
 }
 
-int createLog(char *path)
-{
+void termHandler(int sig){
+    close(_log);
+    close(mainSocket);
+    close(pipeInputHMI[READ]);
+    exit(0);
+}
+
+int createLog(char *path){
     int fd = open(path, O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1) exit(0);
     close(fd);
@@ -97,6 +103,7 @@ void initProcesses(int mode){
     int pid;
     setupLogFiles();
 
+    /*
     // inizializzazione HMI Input
     pipe(pipeInputHMI);
     pid = fork();
@@ -107,6 +114,7 @@ void initProcesses(int mode){
     }else if(pid < 0) exit(0);
     close(pipeInputHMI[WRITE]);
     setupComponent(N_IHMI, pid, HMI);
+    */
 
     // inizializzazione BrakeByWire
     pid = fork();
@@ -155,23 +163,23 @@ void centralECU(){
     writeLine(_log, "Inizio connessione ai Componenti");
     for(int i=0; i<NUM_COMPONENTI-1; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
         struct CompConnection tempCompConnection;
-        struct Componente tempComponente;
 
         tempCompConnection = connectToComponent(mainSocket);
 
+        int pos;
         if(strcmp(tempCompConnection.nome, BBW)==0) {
-            tempComponente=componenti[N_BBW];
+            pos=N_BBW;
         }else if(strcmp(tempCompConnection.nome, FWC)==0) {
-            tempComponente=componenti[N_FWC];
+            pos=N_FWC;
         }else if(strcmp(tempCompConnection.nome, PA)==0) {
-            tempComponente=componenti[N_PA];
+            pos=N_PA;
         }else if(strcmp(tempCompConnection.nome, SBW)==0) {
-            tempComponente=componenti[N_SBW];
+            pos=N_SBW;
         }else if(strcmp(tempCompConnection.nome, TC)==0) {
-            tempComponente=componenti[N_TC];
+            pos=N_TC;
         }else exit(0);
 
-        tempComponente.fdSocket = tempCompConnection.fd;
+        componenti[pos].fdSocket = tempCompConnection.fd;
 
         char toLog[64] = "Componente connesso: ";
         strcat(toLog, tempCompConnection.nome);
@@ -179,6 +187,7 @@ void centralECU(){
     }
     writeLine(_log, "Tutti i componenti sono connessi");
 
-    while(1){}
+    while(1){
+        
+    }
 }
-

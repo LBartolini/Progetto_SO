@@ -99,3 +99,13 @@ struct CompConnection connectToComponent(int centralFd){
 
     return *c;
 }
+
+int sendMessage(int fd, char* nome, char* msg){
+    char* result;
+    result = malloc((sizeof nome)+(sizeof msg)+1);
+    strcpy(result, nome);
+    strcat(result, ":");
+    strcat(result, msg);
+
+    return writeLine(fd, result);
+}

@@ -15,9 +15,13 @@
 #include "BBW.h"
 #include "utils.h"
 
-void mainBrakeByWire(){
-    int sock, logBBW;
+int sock, logBBW;
 
+void termHandlerBBW(int);
+
+void mainBrakeByWire(){
+    signal(SIGTERM, termHandlerBBW);
+    
     logBBW = open(BBW_LOG, O_WRONLY);
     if(logBBW == -1) exit(0);
 
@@ -26,4 +30,12 @@ void mainBrakeByWire(){
     writeLine(sock, BBW);
     writeLine(logBBW, "Connessione stabilita con successo");
 
+    
+    termHandlerBBW(0);
+}
+
+void termHandlerBBW(int sig){
+    close(sock);
+    close(logBBW);
+    exit(0);
 }

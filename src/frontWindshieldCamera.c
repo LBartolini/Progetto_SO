@@ -15,9 +15,13 @@
 #include "FWC.h"
 #include "utils.h"
 
-void mainFrontWindshieldCamera(){
-    int sock, logFWC;
+int sock, logFWC;
 
+void termHandlerFWC(int);
+
+void mainFrontWindshieldCamera(){
+    signal(SIGTERM, termHandlerFWC);
+    
     logFWC = open(FWC_LOG, O_WRONLY);
     if(logFWC == -1) exit(0);
 
@@ -25,4 +29,12 @@ void mainFrontWindshieldCamera(){
     sock = connectToServer(CENTRAL_SOCKET);
     writeLine(sock, FWC);
     writeLine(logFWC, "Connessione stabilita con successo");
+
+    termHandlerFWC(0);
+}
+
+void termHandlerFWC(int sig){
+    close(sock);
+    close(logFWC);
+    exit(0);
 }

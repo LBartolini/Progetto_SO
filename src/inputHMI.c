@@ -18,11 +18,11 @@
 char string[20];
 int pipeECU;
 
-void termHandler(int sig);
+void termHandlerIHMI(int);
 
 void mainInputHMI(int* pipe){
+    signal(SIGTERM, termHandlerIHMI);
     pipeECU = pipe[WRITE];
-    signal(SIGTERM, termHandler);
 
     while(1){
         printf("\n:>");
@@ -39,7 +39,7 @@ void mainInputHMI(int* pipe){
     close(pipeECU);
 }
 
-void termHandler(int sig){
+void termHandlerIHMI(int sig){
     close(pipeECU);
     exit(0);
 }
