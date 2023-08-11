@@ -101,11 +101,19 @@ struct CompConnection connectToComponent(int centralFd){
 }
 
 int sendMessage(int fd, char* nome, char* msg){
-    char* result;
-    result = malloc((sizeof nome)+(sizeof msg)+1);
-    strcpy(result, nome);
-    strcat(result, ":");
-    strcat(result, msg);
+    char result[1024];
+    sprintf(result, "%s:%s", nome, msg);
 
     return writeLine(fd, result);
+}
+
+int readByte(int fd, char *str)
+{
+    unsigned long int buffer[8];
+    ssize_t n = 0;
+    n = read(fd, buffer, 8);
+    if (n < 0) exit(0);
+
+    sprintf(str, "%016lX", *buffer);
+    return n;
 }
