@@ -12,4 +12,4 @@ obj/%.o: src/%.c
 	cc -c $< -I include -o $@
 
 clean: 
-	rm -f bin/* obj/*.o log/*
+	rm -f bin/* obj/*.o log/* main

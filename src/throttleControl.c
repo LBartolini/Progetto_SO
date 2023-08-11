@@ -16,10 +16,12 @@
 #include "utils.h"
 
 int sock, logTC;
+char buffer[100], toLog[20];
 
 void termHandlerTC(int);
 
 void mainThrottleControl(){
+    char toAppend[1];
     signal(SIGTERM, termHandlerTC);
 
     logTC = open(TC_LOG, O_WRONLY);
@@ -29,6 +31,21 @@ void mainThrottleControl(){
     sock = connectToServer(CENTRAL_SOCKET);
     writeLine(sock, TC);
     writeLine(logTC, "Connessione stabilita con successo");
+
+    while(1){
+        strcpy(toLog, "AUMENTO ");
+        memset(buffer, 0, sizeof buffer);
+        memset(toAppend, 0, sizeof toAppend);
+        readLine(sock, buffer);
+        int i = 11;
+        while(buffer[i] != '\0'){
+            sprintf(toAppend, "%c", buffer[i]);
+            strcat(toLog, toAppend);
+            i++;
+        }
+
+        writeLine(logTC, toLog);
+    }
 
     termHandlerTC(0);
 }
