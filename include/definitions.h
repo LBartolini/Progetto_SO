@@ -24,7 +24,7 @@
 #define INPUT_ARTIFICIALE "data/randomARTIFICIALE.binary"
 #define INPUT_ARTIFICIALE_U "data/urandomARTIFICIALE.binary"
 
-#define FRONT_CAMERA_DATA "res/frontCamera.data"
+#define FRONT_CAMERA_DATA "data/frontCamera.data"
 
 // log
 #define ECU_LOG "log/ECU.log" 

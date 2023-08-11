@@ -188,6 +188,8 @@ void centralECU(){
     writeLine(_log, "Tutti i componenti sono connessi");
 
     while(1){
-        
+        readLine(componenti[N_FWC].fdSocket, componenti[N_FWC].buffer);
+        writeLine(_log, componenti[N_FWC].buffer);
+
     }
 }

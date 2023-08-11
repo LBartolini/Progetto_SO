@@ -15,7 +15,8 @@
 #include "FWC.h"
 #include "utils.h"
 
-int sock, logFWC;
+int sock, logFWC, fdFrontCamera;
+char buffer[200];
 
 void termHandlerFWC(int);
 
@@ -25,10 +26,23 @@ void mainFrontWindshieldCamera(){
     logFWC = open(FWC_LOG, O_WRONLY);
     if(logFWC == -1) exit(0);
 
+    fdFrontCamera = open(FRONT_CAMERA_DATA, O_RDONLY);
+    if(fdFrontCamera == -1) exit(0);
+
     writeLine(logFWC, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);
     writeLine(sock, FWC);
     writeLine(logFWC, "Connessione stabilita con successo");
+
+    while(1){
+        memset(buffer, 0, sizeof buffer);
+        readLine(fdFrontCamera, buffer);
+
+        writeLine(sock, buffer);
+        writeLine(logFWC, buffer);
+        
+        sleep(1);
+    }
 
     termHandlerFWC(0);
 }
@@ -36,5 +50,6 @@ void mainFrontWindshieldCamera(){
 void termHandlerFWC(int sig){
     close(sock);
     close(logFWC);
+    close(fdFrontCamera);
     exit(0);
 }
