@@ -10,13 +10,14 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 
 #include "definitions.h"
 #include "TC.h"
 #include "utils.h"
 
 int sock, logTC;
-char buffer[100], toLog[20];
+char buffer[100], toLog[60];
 
 void termHandlerTC(int);
 
@@ -43,8 +44,8 @@ void mainThrottleControl(){
             strcat(toLog, toAppend);
             i++;
         }
-
-        writeLine(logTC, toLog);
+        sprintf(buffer, "%d:%s", (int)time(NULL), toLog);
+        writeLine(logTC, buffer);
     }
 
     termHandlerTC(0);
