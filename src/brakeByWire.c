@@ -10,17 +10,21 @@
 #include <sys/un.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <time.h>
 
 #include "definitions.h"
 #include "BBW.h"
 #include "utils.h"
 
 int sock, logBBW;
+char buffer[60], toLog[100];
 
 void termHandlerBBW(int);
+void stopHandler(int);
 
 void mainBrakeByWire(){
     signal(SIGTERM, termHandlerBBW);
+    signal(SIGUSR1, stopHandler);
     
     logBBW = open(BBW_LOG, O_WRONLY);
     if(logBBW == -1) exit(0);
@@ -30,6 +34,14 @@ void mainBrakeByWire(){
     writeLine(sock, BBW);
     writeLine(logBBW, "Connessione stabilita con successo");
 
+    while(1){
+        memset(buffer, 0, sizeof buffer);
+        memset(toLog, 0, sizeof toLog);
+
+        readLine(sock, buffer);
+        sprintf(toLog, "%d:%s", (int)time(NULL), buffer);
+        writeLine(logBBW, toLog);
+    }
     
     termHandlerBBW(0);
 }
@@ -38,4 +50,8 @@ void termHandlerBBW(int sig){
     close(sock);
     close(logBBW);
     exit(0);
+}
+
+void stopHandler(int sig){
+    writeLine(logBBW, "ARRESTO AUTO");
 }
