@@ -39,7 +39,7 @@ struct Componente{
     char nome[4];
     int pid;
     int fdSocket;
-    char buffer[1024];
+    char buffer[512];
 };
 
 #endif

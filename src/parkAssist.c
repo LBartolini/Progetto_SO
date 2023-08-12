@@ -15,8 +15,8 @@
 #include "PA.h"
 #include "utils.h"
 
-int sock, logPA, fdURandom;
-char buffer[100];
+int sock, logPA, fdURandom, bytesRead;
+char buffer[8];
 
 void termHandlerPA(int);
 
@@ -38,24 +38,23 @@ void mainParkAssist(int mode){
     writeLine(logPA, "Connessione stabilita con successo");
 
     while(1){
-        int bytesRead;
         memset(buffer, 0, sizeof buffer);
+        memset(toLog, 0, sizeof toLog);
         readLine(sock, buffer);
         if(strcmp(buffer, "PARK")!=0) exit(0);
 
         for(int i=0; i<30; i++){
             memset(buffer, 0, sizeof buffer);
             bytesRead = readByte(fdURandom, buffer);
-            
             if(bytesRead < 8) continue;
 
-            sendMessage(sock, PA, buffer);
+            writeLine(sock, buffer);
             writeLine(logPA, buffer);
             
             sleep(1);
         }
 
-        sendMessage(sock, PA, "END PARK");
+        writeLine(sock, "END PARK");
         writeLine(logPA, "END PARK");
     }
 

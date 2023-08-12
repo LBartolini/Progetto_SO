@@ -38,7 +38,7 @@ void mainFrontWindshieldCamera(){
         memset(buffer, 0, sizeof buffer);
         readLine(fdFrontCamera, buffer);
 
-        sendMessage(sock, FWC, buffer);
+        writeLine(sock, buffer);
         writeLine(logFWC, buffer);
         
         sleep(1);

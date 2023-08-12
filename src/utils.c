@@ -100,13 +100,6 @@ struct CompConnection connectToComponent(int centralFd){
     return *c;
 }
 
-int sendMessage(int fd, char* nome, char* msg){
-    char result[1024];
-    sprintf(result, "%s:%s", nome, msg);
-
-    return writeLine(fd, result);
-}
-
 int readByte(int fd, char *str)
 {
     unsigned long int buffer[8];
@@ -114,6 +107,25 @@ int readByte(int fd, char *str)
     n = read(fd, buffer, 8);
     if (n < 0) exit(0);
 
-    sprintf(str, "%016lX", *buffer);
+    sprintf(str, "%X", *buffer);
     return n;
+}
+
+int isNumber(char *str){
+    for (int i = 0, len = strlen(str); i < len; i++){
+        if (!isdigit(str[i])){
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+int toNumber(char *str){
+    int num = 0;
+    for (int i = 0; str[i] != '\0'; i++){
+        num = num * 10 + (str[i] - 48);
+    }
+
+    return num;
 }

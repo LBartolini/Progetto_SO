@@ -20,7 +20,7 @@
 #include "TC.h"
 #include "FWC.h"
 
-int velocita, parking, sospeso;
+int velocita, parking, sospeso, componentiConnessi;
 int _log, mainSocket;
 int pipeInputHMI[2];
 struct Componente componenti[NUM_COMPONENTI];
@@ -30,9 +30,15 @@ void termHandler(int);
 void setupLogFiles();
 void centralECU();
 void initProcesses(int);
+int checkCodiciParcheggio(char*);
 
 int main(int argc, char *argv[]){
     int mode;
+    velocita = 0;
+    parking = 0;
+    sospeso = 1;
+    componentiConnessi = 0;
+
     signal(SIGUSR1, inputHandler);
     signal(SIGTERM, termHandler);
 
@@ -56,9 +62,18 @@ void inputHandler(int sig){
     char message[12];
     memset(message, 0, sizeof message);
     readLine(pipeInputHMI[READ], message);
-    writeLine(_log, message);
 
-    // TODO
+    if(componentiConnessi && !parking){
+        if(strcmp(message, "INIZIO")==0){
+            sospeso=0;
+        }else if(strcmp(message, "PARCHEGGIO")==0){
+            parking=1;
+        }else if(strcmp(message, "ARRESTO")==0){
+            velocita=0;
+            kill(componenti[N_BBW].pid, SIGUSR1); // segnale di arresto
+            writeLine(_log, "BBW:SEGNALE ARRESTO (da HMI)");
+        }else exit(0);
+    }
 }
 
 void termHandler(int sig){
@@ -103,7 +118,6 @@ void initProcesses(int mode){
     int pid;
     setupLogFiles();
 
-    /*
     // inizializzazione HMI Input
     pipe(pipeInputHMI);
     pid = fork();
@@ -114,7 +128,6 @@ void initProcesses(int mode){
     }else if(pid < 0) exit(0);
     close(pipeInputHMI[WRITE]);
     setupComponent(N_IHMI, pid, HMI);
-    */
 
     // inizializzazione BrakeByWire
     pid = fork();
@@ -158,8 +171,12 @@ void initProcesses(int mode){
 
 }
 
+int checkCodiciParcheggio(char *buffer){
+    return strstr(buffer, "172A") != NULL || strstr(buffer, "D693") != NULL || strstr(buffer, "0000") != NULL || strstr(buffer, "BDD8") != NULL || strstr(buffer, "FAEE") != NULL || strstr(buffer, "4300") != NULL;
+}
+
 void centralECU(){
-    // TODO: connessioni fra processi e socket centrale
+    int velocitaRichiesta;
     writeLine(_log, "Inizio connessione ai Componenti");
     for(int i=0; i<NUM_COMPONENTI-1; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
         struct CompConnection tempCompConnection;
@@ -186,10 +203,84 @@ void centralECU(){
         writeLine(_log, toLog);
     }
     writeLine(_log, "Tutti i componenti sono connessi");
+    componentiConnessi = 1;
 
-    writeLine(componenti[N_PA].fdSocket, "PARK");
     while(1){
-        readLine(componenti[N_PA].fdSocket, componenti[N_PA].buffer);
-        writeLine(_log, componenti[N_PA].buffer);
+        if(parking){ //procedura di parcheggio
+            writeLine(_log, "Inizio procedura di parcheggio");
+            while(velocita != 0){
+                writeLine(componenti[N_BBW].fdSocket, "FRENO 5");
+                writeLine(_log, "BBW:FRENO 5");
+                velocita -= 5;
+                sleep(1);
+            }
+
+            writeLine(componenti[N_PA].fdSocket, "PARK");
+            writeLine(_log, "PA:PARK");
+            
+            int parcheggioCompletato = 1;
+            do{
+                memset(componenti[N_PA].buffer, 0, sizeof componenti[N_PA].buffer);
+                readLine(componenti[N_PA].fdSocket, componenti[N_PA].buffer);
+
+                // controlla se il buffer contiene la stringa, 
+                // in tal caso la procedura di parcheggio non ha funzionato 
+                // e deve essere tentata nuovamente
+                if(checkCodiciParcheggio(componenti[N_PA].buffer)) {
+                    writeLine(_log, "Parcheggio errato!");
+                    parcheggioCompletato = 0;
+
+                    // TODO segnale per ricominciare il parcheggio
+                }
+                sleep(1);
+            }while(strcmp(componenti[N_PA].buffer, "END PARK")!=0);
+
+            if(parcheggioCompletato){
+                writeLine(_log, "Parcheggio Completato con successo!");
+                parking=0;
+                sospeso=1;
+            }
+            
+        }else if(!sospeso){
+            if (velocita > velocitaRichiesta){
+                writeLine(componenti[N_BBW].fdSocket, "FRENO 5");
+                writeLine(_log, "BBW:FRENO 5");
+                velocita -= 5;
+            }else if (velocita < velocitaRichiesta){
+                writeLine(componenti[N_TC].fdSocket, "INCREMENTO 5");
+                writeLine(_log, "TC:INCREMENTO 5");
+                velocita += 5;
+            }
+
+            memset(componenti[N_FWC].buffer, 0, sizeof componenti[N_FWC].buffer);
+            readLine(componenti[N_FWC].fdSocket, componenti[N_FWC].buffer);
+
+            if(isNumber(componenti[N_FWC].buffer)){
+                int newVelocitaRichiesta = toNumber(componenti[N_FWC].buffer);
+                if(velocitaRichiesta != newVelocitaRichiesta){
+                    char toLog[100];
+                    sprintf(toLog, "Velocità richiesta %d", newVelocitaRichiesta);
+                    writeLine(_log, toLog);
+                }
+                velocitaRichiesta = newVelocitaRichiesta;
+            }else{
+                if(strcmp(componenti[N_FWC].buffer, "PARCHEGGIO")==0){
+                    parking=1;
+                }else if(strcmp(componenti[N_FWC].buffer, "PERICOLO")==0){
+                    kill(componenti[N_BBW].pid, SIGUSR1);
+                    writeLine(_log, "BBW:SEGNALE ARRESTO");
+                    velocita=0;
+                }else if(strcmp(componenti[N_FWC].buffer, "SINISTRA")==0){
+                    writeLine(componenti[N_SBW].fdSocket, "SINISTRA");
+                    writeLine(_log, "SBW:SINISTRA");
+                }else if(strcmp(componenti[N_FWC].buffer, "DESTRA")==0){
+                    writeLine(componenti[N_SBW].fdSocket, "DESTRA");
+                    writeLine(_log, "SBW:DESTRA");
+                }
+            }
+
+        }
+        
+        usleep(300000);
     }
 }
