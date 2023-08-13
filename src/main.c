@@ -20,7 +20,7 @@
 #include "TC.h"
 #include "FWC.h"
 
-int velocita, parking, sospeso, componentiConnessi;
+int velocita, parking, sospeso, tuttiComponentiConnessi;
 int _log, mainSocket;
 int pipeInputHMI[2];
 struct Componente componenti[NUM_COMPONENTI];
@@ -30,6 +30,7 @@ void termHandler(int);
 void setupLogFiles();
 void centralECU();
 void initProcesses(int);
+void removeAllProcesses();
 int checkCodiciParcheggio(char*);
 
 int main(int argc, char *argv[]){
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]){
     velocita = 0;
     parking = 0;
     sospeso = 1;
-    componentiConnessi = 0;
+    tuttiComponentiConnessi = 0;
 
     signal(SIGUSR1, inputHandler);
     signal(SIGTERM, termHandler);
@@ -63,7 +64,7 @@ void inputHandler(int sig){
     memset(message, 0, sizeof message);
     readLine(pipeInputHMI[READ], message);
 
-    if(componentiConnessi && !parking){
+    if(tuttiComponentiConnessi && !parking){
         if(strcmp(message, "INIZIO")==0){
             sospeso=0;
         }else if(strcmp(message, "PARCHEGGIO")==0){
@@ -80,7 +81,14 @@ void termHandler(int sig){
     close(_log);
     close(mainSocket);
     close(pipeInputHMI[READ]);
+    removeAllProcesses();
     exit(0);
+}
+
+void removeAllProcesses(){
+    for(int i=0; i<NUM_COMPONENTI; i++){
+        kill(componenti[i].pid, SIGTERM);
+    }
 }
 
 int createLog(char *path){
@@ -176,7 +184,7 @@ int checkCodiciParcheggio(char *buffer){
 }
 
 void centralECU(){
-    int velocitaRichiesta;
+    int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
     for(int i=0; i<NUM_COMPONENTI-1; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
         struct CompConnection tempCompConnection;
@@ -203,7 +211,7 @@ void centralECU(){
         writeLine(_log, toLog);
     }
     writeLine(_log, "Tutti i componenti sono connessi");
-    componentiConnessi = 1;
+    tuttiComponentiConnessi = 1;
 
     while(1){
         if(parking){ //procedura di parcheggio
@@ -237,8 +245,7 @@ void centralECU(){
 
             if(parcheggioCompletato){
                 writeLine(_log, "Parcheggio Completato con successo!");
-                parking=0;
-                sospeso=1;
+                termHandler(0);
             }
             
         }else if(!sospeso){
@@ -268,7 +275,9 @@ void centralECU(){
                     parking=1;
                 }else if(strcmp(componenti[N_FWC].buffer, "PERICOLO")==0){
                     kill(componenti[N_BBW].pid, SIGUSR1);
+                    writeLine(_log, "Pericolo");
                     writeLine(_log, "BBW:SEGNALE ARRESTO");
+                    sospeso=1;
                     velocita=0;
                 }else if(strcmp(componenti[N_FWC].buffer, "SINISTRA")==0){
                     writeLine(componenti[N_SBW].fdSocket, "SINISTRA");

@@ -33,8 +33,9 @@ void mainInputHMI(int* pipe){
             kill(getppid(), SIGUSR1);
         }else{
             printf("Comando non valido!\n");
-            sleep(1);
         }
+
+        sleep(1);
     }
     close(pipeECU);
 }

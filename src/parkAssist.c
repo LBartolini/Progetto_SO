@@ -39,7 +39,6 @@ void mainParkAssist(int mode){
 
     while(1){
         memset(buffer, 0, sizeof buffer);
-        memset(toLog, 0, sizeof toLog);
         readLine(sock, buffer);
         if(strcmp(buffer, "PARK")!=0) exit(0);
 
