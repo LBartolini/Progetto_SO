@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <time.h>
+#include <math.h>
 #include <limits.h>
 
 #include "definitions.h"
@@ -41,7 +42,7 @@ void mainThrottleControl(){
         memset(toAppend, 0, sizeof toAppend);
         readLine(sock, buffer);
         if(throttleCrash()){
-            kill(getppid(), SIGUSR1);
+            kill(getppid(), SIGUSR2);
             break;
         }
         int i = 11;

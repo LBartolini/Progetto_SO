@@ -183,7 +183,14 @@ int checkCodiciParcheggio(char *buffer){
     return strstr(buffer, "172A") != NULL || strstr(buffer, "D693") != NULL || strstr(buffer, "0000") != NULL || strstr(buffer, "BDD8") != NULL || strstr(buffer, "FAEE") != NULL || strstr(buffer, "4300") != NULL;
 }
 
+void throttleBrokenHandler(int sig){
+    writeLine(_log, "TC:SEGNALE TOTALE DI ARRESTO (da TC)");
+    termHandler(EXIT_SUCCESS);
+}
+
 void centralECU(){
+    // controllo signal in caso di mancato funzionamento dell'accelleratore
+    signal(SIGUSR2, throttleBrokenHandler);
     int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
     for(int i=0; i<NUM_COMPONENTI-1; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
