@@ -26,7 +26,7 @@ void mainThrottleControl(){
     signal(SIGTERM, termHandlerTC);
 
     logTC = open(TC_LOG, O_WRONLY);
-    if(logTC == -1) exit(0);
+    if(logTC == -1) exit(EXIT_FAILURE);
 
     writeLine(logTC, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);
@@ -54,5 +54,5 @@ void mainThrottleControl(){
 void termHandlerTC(int sig){
     close(sock);
     close(logTC);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

@@ -29,7 +29,7 @@ void mainSteerByWire(){
     signal(SIGTERM, termHandlerSBW);
     
     logSBW = open(SBW_LOG, O_WRONLY);
-    if(logSBW == -1) exit(0);
+    if(logSBW == -1) exit(EXIT_FAILURE);
 
     writeLine(logSBW, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);
@@ -61,5 +61,5 @@ void mainSteerByWire(){
 void termHandlerSBW(int sig){
     close(sock);
     close(logSBW);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

@@ -27,7 +27,7 @@ void mainBrakeByWire(){
     signal(SIGUSR1, stopHandler);
     
     logBBW = open(BBW_LOG, O_WRONLY);
-    if(logBBW == -1) exit(0);
+    if(logBBW == -1) exit(EXIT_FAILURE);
 
     writeLine(logBBW, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);
@@ -49,7 +49,7 @@ void mainBrakeByWire(){
 void termHandlerBBW(int sig){
     close(sock);
     close(logBBW);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void stopHandler(int sig){

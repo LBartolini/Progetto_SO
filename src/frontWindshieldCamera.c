@@ -24,10 +24,10 @@ void mainFrontWindshieldCamera(){
     signal(SIGTERM, termHandlerFWC);
     
     logFWC = open(FWC_LOG, O_WRONLY);
-    if(logFWC == -1) exit(0);
+    if(logFWC == -1) exit(EXIT_FAILURE);
 
     fdFrontCamera = open(FRONT_CAMERA_DATA, O_RDONLY);
-    if(fdFrontCamera == -1) exit(0);
+    if(fdFrontCamera == -1) exit(EXIT_FAILURE);
 
     writeLine(logFWC, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);
@@ -51,5 +51,5 @@ void termHandlerFWC(int sig){
     close(sock);
     close(logFWC);
     close(fdFrontCamera);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

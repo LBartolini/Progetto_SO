@@ -42,5 +42,5 @@ void mainInputHMI(int* pipe){
 
 void termHandlerIHMI(int sig){
     close(pipeECU);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }

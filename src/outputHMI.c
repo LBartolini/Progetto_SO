@@ -18,7 +18,7 @@ int main(){
     char string[512];
     int len = 0;
     int fd = open(ECU_LOG, O_RDONLY);
-    if(fd == -1) exit(0);
+    if(fd == -1) exit(EXIT_FAILURE);
 
     while(1){
         memset(string, 0, sizeof string);

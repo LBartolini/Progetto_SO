@@ -52,7 +52,7 @@ int main(int argc, char *argv[]){
     initProcesses(mode);
 
     _log = open(ECU_LOG, O_WRONLY);
-    if(_log == -1) exit(0);
+    if(_log == -1) exit(EXIT_FAILURE);
     
     centralECU();
     
@@ -73,7 +73,7 @@ void inputHandler(int sig){
             velocita=0;
             kill(componenti[N_BBW].pid, SIGUSR1); // segnale di arresto
             writeLine(_log, "BBW:SEGNALE ARRESTO (da HMI)");
-        }else exit(0);
+        }else exit(EXIT_FAILURE);
     }
 }
 
@@ -82,7 +82,7 @@ void termHandler(int sig){
     close(mainSocket);
     close(pipeInputHMI[READ]);
     removeAllProcesses();
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
 
 void removeAllProcesses(){
@@ -93,7 +93,7 @@ void removeAllProcesses(){
 
 int createLog(char *path){
     int fd = open(path, O_CREAT, S_IRUSR | S_IWUSR);
-    if (fd == -1) exit(0);
+    if (fd == -1) exit(EXIT_FAILURE);
     close(fd);
     return 1;
 }
@@ -112,7 +112,7 @@ void setupLogFiles(){
             createLog(BBW_LOG) &&
             createLog(FWC_LOG) &&
             createLog(PA_LOG))){
-        exit(0);
+        exit(EXIT_SUCCESS);
     }
 }
 
@@ -132,8 +132,8 @@ void initProcesses(int mode){
     if (pid == 0){ 
         close(pipeInputHMI[READ]);
         mainInputHMI(pipeInputHMI);
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     close(pipeInputHMI[WRITE]);
     setupComponent(N_IHMI, pid, HMI);
 
@@ -141,40 +141,40 @@ void initProcesses(int mode){
     pid = fork();
     if (pid == 0){ 
         mainBrakeByWire();
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_BBW, pid, BBW); 
 
     // inizializzazione FrontWindshieldCamera
     pid = fork();
     if (pid == 0){ 
         mainFrontWindshieldCamera();
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FWC, pid, FWC);
 
     // inizializzazione ParkAssist
     pid = fork();
     if (pid == 0){ 
         mainParkAssist(mode);
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_PA, pid, PA);
 
     // inizializzazione SteerByWire
     pid = fork();
     if (pid == 0){ 
         mainSteerByWire();
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_SBW, pid, SBW);
 
     // inizializzazione ThrottleControl
     pid = fork();
     if (pid == 0){ 
         mainThrottleControl();
-        exit(0);
-    }else if(pid < 0) exit(0);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_TC, pid, TC);
 
 }

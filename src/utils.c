@@ -41,7 +41,7 @@ void readLineFromIndex(int fd, char *str, int *index) {
     do{
         n = read(fd, str, 1);
         if (n < 0){
-            exit(0);
+            exit(EXIT_FAILURE);
         }
     } while (n > 0 && *str++ != '\0');
 }
@@ -52,12 +52,12 @@ int initServerSocket(char *name){
     struct sockaddr_un centralAddr;
     centralLen = sizeof(centralAddr);
     centralFd = socket(AF_UNIX, SOCK_STREAM, 0);
-    if (centralFd < 0) exit(0);
+    if (centralFd < 0) exit(EXIT_FAILURE);
     centralAddr.sun_family = AF_UNIX;
     strcpy(centralAddr.sun_path, name);
     unlink(centralAddr.sun_path);
-    if (bind(centralFd, (struct sockaddr *)&centralAddr, centralLen) < 0) exit(0);
-    if (listen(centralFd, NUM_COMPONENTI) < 0) exit(0);
+    if (bind(centralFd, (struct sockaddr *)&centralAddr, centralLen) < 0) exit(EXIT_FAILURE);
+    if (listen(centralFd, NUM_COMPONENTI) < 0) exit(EXIT_FAILURE);
 
     return centralFd;
 }
@@ -87,7 +87,7 @@ struct CompConnection connectToComponent(int centralFd){
     struct sockaddr_un clientAddr;
     clientLen = sizeof(clientAddr);
     clientFd = accept(centralFd, (struct sockaddr *)&clientAddr, &clientLen);
-    if (clientFd < 0) exit(0);
+    if (clientFd < 0) exit(EXIT_FAILURE);
 
     char buffer[1024];
     memset(buffer, 0, sizeof buffer);
@@ -105,7 +105,7 @@ int readByte(int fd, char *str)
     unsigned long int buffer[8];
     ssize_t n = 0;
     n = read(fd, buffer, 8);
-    if (n < 0) exit(0);
+    if (n < 0) exit(EXIT_FAILURE);
 
     sprintf(str, "%X", *buffer);
     return n;

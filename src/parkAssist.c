@@ -64,5 +64,5 @@ void termHandlerPA(int sig){
     close(sock);
     close(logPA);
     close(fdURandom);
-    exit(0);
+    exit(EXIT_SUCCESS);
 }
