@@ -36,11 +36,11 @@ int readLine(int fd, char *string){
 }
 
 char* getDataSrcUrandom(char *mode){
-    return strcmp(mode, "ARTIFICIALE") == 0 ? URANDOM_ARTIFICIAL : URANDOM;
+    return strcmp(mode, "ARTIFICIALE") == 0 ? INPUT_ARTIFICIALE_U : INPUT_NORMALE_U;
 }
 
 char *getDataSrcRandom(char *mode){
-    return strcmp(mode, "ARTIFICIALE") == 0 ? RANDOM_ARTIFICIAL : RANDOM;
+    return strcmp(mode, "ARTIFICIALE") == 0 ? INPUT_ARTIFICIALE : INPUT_NORMALE;
 }
 
 void readLineFromIndex(int fd, char *str, int *index) {

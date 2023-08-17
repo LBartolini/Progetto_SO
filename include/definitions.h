@@ -4,13 +4,6 @@
 #define READ 0
 #define WRITE 1
 
-#define URANDOM "/dev/urandom"
-#define URANDOM_ARTIFICIAL "data/urandomARTIFICIALE.binary"
-#define RANDOM "/dev/random"
-#define RANDOM_ARTIFICIAL "data/randomARTIFICIALE.binary"
-#define NORMAL "NORMALE"
-#define ARTIFICIAL "ARTIFICIALE"
-
 #define CENTRAL_SOCKET "main"
 
 // componenti
@@ -25,12 +18,14 @@
 
 // modalità di avvio
 #define NORMALE 0
+#define NORMAL "NORMALE"
 #define INPUT_NORMALE "/dev/random"
 #define INPUT_NORMALE_U "/dev/urandom"
 
 #define ARTIFICIALE 1
 #define INPUT_ARTIFICIALE "data/randomARTIFICIALE.binary"
 #define INPUT_ARTIFICIALE_U "data/urandomARTIFICIALE.binary"
+#define ARTIFICIAL "ARTIFICIALE"
 
 #define FRONT_CAMERA_DATA "data/frontCamera.data"
 

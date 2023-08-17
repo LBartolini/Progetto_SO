@@ -15,5 +15,7 @@ struct CompConnection connectToComponent(int);
 int readByte(int, char*);
 int isNumber(char*);
 int toNumber(char*);
+char* getDataSrcUrandom(char *mode);
+char *getDataSrcRandom(char *mode);
 
 #endif

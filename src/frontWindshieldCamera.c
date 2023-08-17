@@ -44,7 +44,7 @@ void mainFrontWindshieldCamera(){
         sleep(1);
     }
 
-    termHandlerFWC(EXIT_SUCCESS);
+    termHandlerFWC(0);
 }
 
 void termHandlerFWC(int sig){

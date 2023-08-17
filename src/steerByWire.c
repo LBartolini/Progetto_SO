@@ -55,7 +55,7 @@ void mainSteerByWire(){
         }
     }
 
-    termHandlerSBW(EXIT_SUCCESS);
+    termHandlerSBW(0);
 }
 
 void termHandlerSBW(int sig){
