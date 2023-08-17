@@ -19,6 +19,7 @@
 #include "SBW.h"
 #include "TC.h"
 #include "FWC.h"
+#include "FFR.h"
 
 int velocita, parking, sospeso, tuttiComponentiConnessi;
 int _log, mainSocket;
@@ -104,6 +105,7 @@ void setupLogFiles(){
     remove(TC_LOG);
     remove(BBW_LOG);
     remove(FWC_LOG);
+    remove(FFR_LOG);
     remove(PA_LOG);
 
     if(!(createLog(ECU_LOG) &&
@@ -111,6 +113,7 @@ void setupLogFiles(){
             createLog(TC_LOG) &&
             createLog(BBW_LOG) &&
             createLog(FWC_LOG) &&
+            createLog(FFR_LOG) &&
             createLog(PA_LOG))){
         exit(EXIT_SUCCESS);
     }
@@ -177,6 +180,14 @@ void initProcesses(int mode){
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_TC, pid, TC);
 
+    // inizializzazione ThrottleControl
+    pid = fork();
+    if (pid == 0){ 
+        mainForwardFacingRadar();
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
+    setupComponent(N_FFR, pid, FFR);
+
 }
 
 int checkCodiciParcheggio(char *buffer){
@@ -209,6 +220,8 @@ void centralECU(){
             pos=N_SBW;
         }else if(strcmp(tempCompConnection.nome, TC)==0) {
             pos=N_TC;
+        }else if(strcmp(tempCompConnection.nome, FFR)==0){
+            pos=N_FFR;
         }else exit(0);
 
         componenti[pos].fdSocket = tempCompConnection.fd;

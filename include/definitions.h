@@ -7,13 +7,14 @@
 #define CENTRAL_SOCKET "main"
 
 // componenti
-#define NUM_COMPONENTI 6
+#define NUM_COMPONENTI 7
 #define N_IHMI 0
 #define N_BBW 1
 #define N_FWC 2
 #define N_PA 3
 #define N_SBW 4
 #define N_TC 5
+#define N_FFR 6
 
 // modalità di avvio
 #define NORMALE 0
@@ -33,6 +34,7 @@
 #define BBW_LOG "log/BBW.log" 
 #define FWC_LOG "log/FWC.log" 
 #define PA_LOG "log/PA.log" 
+#define FFR_LOG "log/FFR.log"
 
 // componente
 struct Componente{
