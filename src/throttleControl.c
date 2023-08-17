@@ -55,7 +55,7 @@ void mainThrottleControl(){
         writeLine(logTC, buffer);
     }
 
-    termHandlerTC(0);
+    termHandlerTC(EXIT_SUCCESS);
 }
 
 int throttleCrash(){

@@ -43,7 +43,7 @@ void mainBrakeByWire(){
         writeLine(logBBW, toLog);
     }
     
-    termHandlerBBW(0);
+    termHandlerBBW(EXIT_SUCCESS);
 }
 
 void termHandlerBBW(int sig){

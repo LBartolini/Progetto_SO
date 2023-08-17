@@ -57,7 +57,7 @@ void mainParkAssist(int mode){
         writeLine(logPA, "END PARK");
     }
 
-    termHandlerPA(0);
+    termHandlerPA(EXIT_SUCCESS);
 }
 
 void termHandlerPA(int sig){
