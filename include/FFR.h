@@ -3,6 +3,7 @@
 
 #define FFR "FFR"
 
-void mainForwardFacingRadar();
+void mainForwardFacingRadar(int argc, char **argv);
+// void mainForwardFacingRadar();
 
 #endif

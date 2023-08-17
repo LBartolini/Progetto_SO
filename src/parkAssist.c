@@ -23,14 +23,14 @@ void termHandlerPA(int);
 void mainParkAssist(int mode){
     signal(SIGTERM, termHandlerPA);
     logPA = open(PA_LOG, O_WRONLY);
-    if(logPA == -1) exit(0);
+    if(logPA == -1) exit(EXIT_FAILURE);
 
     if(mode==NORMALE){
         fdURandom = open(INPUT_NORMALE_U, O_RDONLY);
     }else if(mode==ARTIFICIALE){
         fdURandom = open(INPUT_ARTIFICIALE_U, O_RDONLY);
     }else exit(0);
-    if(fdURandom == -1) exit(0);
+    if(fdURandom == -1) exit(EXIT_FAILURE);
 
     writeLine(logPA, "Connessione alla ECU");
     sock = connectToServer(CENTRAL_SOCKET);

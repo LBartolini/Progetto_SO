@@ -4,6 +4,13 @@
 #define READ 0
 #define WRITE 1
 
+#define URANDOM "/dev/urandom"
+#define URANDOM_ARTIFICIAL "data/urandomARTIFICIALE.binary"
+#define RANDOM "/dev/random"
+#define RANDOM_ARTIFICIAL "data/randomARTIFICIALE.binary"
+#define NORMAL "NORMALE"
+#define ARTIFICIAL "ARTIFICIALE"
+
 #define CENTRAL_SOCKET "main"
 
 // componenti

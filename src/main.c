@@ -183,7 +183,8 @@ void initProcesses(int mode){
     // inizializzazione ThrottleControl
     pid = fork();
     if (pid == 0){ 
-        mainForwardFacingRadar();
+        char *args[] = {FFR, mode, NULL};
+        mainForwardFacingRadar(N_FFR, args);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FFR, pid, FFR);
