@@ -20,7 +20,7 @@ char buffer[1024];
 
 void termHandlerFFR(int);
 
-void mainForwardFacingRadar(int argc, char **argv){
+void mainForwardFacingRadar(int argc){
     signal(SIGTERM, termHandlerFFR);
     logFFR = open(FFR_LOG, O_WRONLY);
     if(logFFR == -1) exit(EXIT_FAILURE);
@@ -29,7 +29,7 @@ void mainForwardFacingRadar(int argc, char **argv){
     sock = connectToServer(CENTRAL_SOCKET);
     writeLine(sock, FFR);
     writeLine(logFFR, "Connessione stabilita con successo");
-    fdURandom = open(getDataSrcUrandom(argv[1]), O_RDONLY); // apre file "urandom"
+    fdURandom = open(INPUT_NORMALE_U, O_RDONLY); // apre file "urandom"
     if (fdURandom == -1)  exit(EXIT_FAILURE);
     while (1){
         memset(buffer, 0, sizeof buffer);

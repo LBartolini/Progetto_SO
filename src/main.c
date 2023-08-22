@@ -185,8 +185,8 @@ void initProcesses(int mode){
     if (pid == 0){ 
         // char *args[] = {FFR, (char*)mode, NULL};
         // TODO
-        char *args[] = {FFR, NULL};
-        mainForwardFacingRadar(N_FFR, args);
+        // char *args[] = {FFR, NULL};
+        mainForwardFacingRadar(N_FFR);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FFR, pid, FFR);
