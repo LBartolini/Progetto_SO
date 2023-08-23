@@ -26,7 +26,7 @@ void mainSurroundViewCameras(int argc){
     if(logSVC == -1) exit(EXIT_FAILURE);
 
     writeLine(logSVC, "Connessione alla ECU");
-    sock = connectToServer(CENTRAL_SOCKET);
+    sock = connectToServer(PARK_ASSIST);
     writeLine(sock, SVC);
     writeLine(logSVC, "Connessione stabilita con successo");
     fdURandom = open(INPUT_NORMALE_U, O_RDONLY); // apre file "urandom"

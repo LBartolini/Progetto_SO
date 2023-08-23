@@ -183,21 +183,13 @@ void initProcesses(int mode){
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_TC, pid, TC);
 
-    // inizializzazione ThrottleControl
+    // inizializzazione forwardFacingRadar
     pid = fork();
     if (pid == 0){ 
         mainForwardFacingRadar(N_FFR);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FFR, pid, FFR);
-
-    // inizializzazione ThrottleControl
-    pid = fork();
-    if (pid == 0){ 
-        mainSurroundViewCameras(N_SVC);
-        exit(EXIT_SUCCESS);
-    }else if(pid < 0) exit(EXIT_FAILURE);
-    setupComponent(N_SVC, pid, SVC);
 
 }
 
@@ -215,7 +207,7 @@ void centralECU(){
     signal(SIGUSR2, throttleBrokenHandler);
     int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
-    for(int i=0; i<NUM_COMPONENTI-1; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
+    for(int i=0; i<NUM_COMPONENTI-2; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
         struct CompConnection tempCompConnection;
 
         tempCompConnection = connectToComponent(mainSocket);
@@ -233,8 +225,6 @@ void centralECU(){
             pos=N_TC;
         }else if(strcmp(tempCompConnection.nome, FFR)==0){
             pos=N_FFR;
-        }else if(strcmp(tempCompConnection.nome, SVC)==0){
-            pos=N_SVC;
         }else exit(0);
 
         componenti[pos].fdSocket = tempCompConnection.fd;

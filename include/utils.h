@@ -4,6 +4,7 @@
 struct CompConnection{
     char nome[4];
     int fd;
+    char buffer[512];
 };
 
 int writeLine(int, char*);

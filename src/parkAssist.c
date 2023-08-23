@@ -13,17 +13,24 @@
 
 #include "definitions.h"
 #include "PA.h"
+#include "SVC.h"
 #include "utils.h"
 
-int sock, logPA, fdURandom, bytesRead;
+int sock, logPA, fdURandom, bytesRead, fdServer;
 char buffer[8];
 
 void termHandlerPA(int);
+void executeSVC();
 
 void mainParkAssist(int mode){
     signal(SIGTERM, termHandlerPA);
     logPA = open(PA_LOG, O_WRONLY);
     if(logPA == -1) exit(EXIT_FAILURE);
+
+    executeSVC();
+    struct CompConnection surroundViewCameras;
+    fdServer = initServerSocket("parkAssist");
+    surroundViewCameras = connectToComponent(fdServer);
 
     if(mode==NORMALE){
         fdURandom = open(INPUT_NORMALE_U, O_RDONLY);
@@ -45,11 +52,16 @@ void mainParkAssist(int mode){
         for(int i=0; i<30; i++){
             memset(buffer, 0, sizeof buffer);
             bytesRead = readByte(fdURandom, buffer);
+            // Legge i byte da surroundViewCamera component
+            memset(surroundViewCameras.buffer, 0, sizeof surroundViewCameras.buffer);
+            if (readLine(surroundViewCameras.fd, surroundViewCameras.buffer) > 0){
+                writeLine(sock, surroundViewCameras.buffer);
+                // per debuggare commantare i writeline di bytesRead
+                writeLine(logPA, surroundViewCameras.buffer);
+            }
             if(bytesRead < 8) continue;
-
-            writeLine(sock, buffer);
-            writeLine(logPA, buffer);
-            
+            // writeLine(sock, buffer);
+            // writeLine(logPA, buffer);
             sleep(1);
         }
 
@@ -60,9 +72,20 @@ void mainParkAssist(int mode){
     termHandlerPA(0);
 }
 
+void executeSVC(){
+    int pid;
+    // inizializzazione surroundViewCamera
+    pid = fork();
+    if (pid == 0){ 
+        mainSurroundViewCameras(N_SVC);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
+}
+
 void termHandlerPA(int sig){
     close(sock);
     close(logPA);
     close(fdURandom);
+    close(fdServer);
     exit(EXIT_SUCCESS);
 }

@@ -5,6 +5,7 @@
 #define WRITE 1
 
 #define CENTRAL_SOCKET "main"
+#define PARK_ASSIST "parkAssist"
 
 // componenti
 #define NUM_COMPONENTI 8
