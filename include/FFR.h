@@ -4,6 +4,5 @@
 #define FFR "FFR"
 
 void mainForwardFacingRadar(int argc);
-// void mainForwardFacingRadar();
 
 #endif

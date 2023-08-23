@@ -1,7 +1,7 @@
 
 all: bin/main bin/output
 
-bin/main: obj/main.o obj/inputHMI.o obj/utils.o obj/brakeByWire.o obj/frontWindshieldCamera.o obj/parkAssist.o obj/steerByWire.o obj/throttleControl.o obj/forwardFacingRadar.o
+bin/main: obj/main.o obj/inputHMI.o obj/utils.o obj/brakeByWire.o obj/frontWindshieldCamera.o obj/parkAssist.o obj/steerByWire.o obj/throttleControl.o obj/forwardFacingRadar.o obj/surroundViewCameras.o
 	cc -o $@ $^
 
 bin/output: obj/outputHMI.o obj/utils.o

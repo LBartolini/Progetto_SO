@@ -20,6 +20,7 @@
 #include "TC.h"
 #include "FWC.h"
 #include "FFR.h"
+#include "SVC.h"
 
 int velocita, parking, sospeso, tuttiComponentiConnessi;
 int _log, mainSocket;
@@ -107,6 +108,7 @@ void setupLogFiles(){
     remove(FWC_LOG);
     remove(FFR_LOG);
     remove(PA_LOG);
+    remove(SVC_LOG);
 
     if(!(createLog(ECU_LOG) &&
             createLog(SBW_LOG) &&
@@ -114,6 +116,7 @@ void setupLogFiles(){
             createLog(BBW_LOG) &&
             createLog(FWC_LOG) &&
             createLog(FFR_LOG) &&
+            createLog(SVC_LOG) &&
             createLog(PA_LOG))){
         exit(EXIT_SUCCESS);
     }
@@ -183,13 +186,18 @@ void initProcesses(int mode){
     // inizializzazione ThrottleControl
     pid = fork();
     if (pid == 0){ 
-        // char *args[] = {FFR, (char*)mode, NULL};
-        // TODO
-        // char *args[] = {FFR, NULL};
         mainForwardFacingRadar(N_FFR);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FFR, pid, FFR);
+
+    // inizializzazione ThrottleControl
+    pid = fork();
+    if (pid == 0){ 
+        mainSurroundViewCameras(N_SVC);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
+    setupComponent(N_SVC, pid, SVC);
 
 }
 
@@ -225,6 +233,8 @@ void centralECU(){
             pos=N_TC;
         }else if(strcmp(tempCompConnection.nome, FFR)==0){
             pos=N_FFR;
+        }else if(strcmp(tempCompConnection.nome, SVC)==0){
+            pos=N_SVC;
         }else exit(0);
 
         componenti[pos].fdSocket = tempCompConnection.fd;

@@ -35,14 +35,6 @@ int readLine(int fd, char *string){
     return n > 0;
 }
 
-char* getDataSrcUrandom(char *mode){
-    return strcmp(mode, "ARTIFICIALE") == 0 ? INPUT_ARTIFICIALE_U : INPUT_NORMALE_U;
-}
-
-char *getDataSrcRandom(char *mode){
-    return strcmp(mode, "ARTIFICIALE") == 0 ? INPUT_ARTIFICIALE : INPUT_NORMALE;
-}
-
 void readLineFromIndex(int fd, char *str, int *index) {
     int n;
     lseek(fd, *index, SEEK_SET);
