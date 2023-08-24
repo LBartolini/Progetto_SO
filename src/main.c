@@ -260,8 +260,6 @@ void centralECU(){
                 if(checkCodiciParcheggio(componenti[N_PA].buffer)) {
                     writeLine(_log, "Parcheggio errato!");
                     parcheggioCompletato = 0;
-
-                    // TODO segnale per ricominciare il parcheggio
                 }
                 sleep(1);
             }while(strcmp(componenti[N_PA].buffer, "END PARK")!=0);

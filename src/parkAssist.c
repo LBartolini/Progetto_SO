@@ -16,18 +16,18 @@
 #include "SVC.h"
 #include "utils.h"
 
-int sock, logPA, fdURandom, bytesRead, fdServer;
+int sock, logPA, fdURandom, bytesRead, fdServer, pidSVC;
 char buffer[8];
 
 void termHandlerPA(int);
-void executeSVC();
+int executeSVC(int);
 
 void mainParkAssist(int mode){
     signal(SIGTERM, termHandlerPA);
     logPA = open(PA_LOG, O_WRONLY);
     if(logPA == -1) exit(EXIT_FAILURE);
 
-    executeSVC();
+    pidSVC = executeSVC(mode);
     struct CompConnection surroundViewCameras;
     fdServer = initServerSocket("parkAssist");
     surroundViewCameras = connectToComponent(fdServer);
@@ -47,7 +47,8 @@ void mainParkAssist(int mode){
     while(1){
         memset(buffer, 0, sizeof buffer);
         readLine(sock, buffer);
-        if(strcmp(buffer, "PARK")!=0) exit(0);
+        if(strcmp(buffer, "PARK")!=0) exit(EXIT_FAILURE);
+        writeLine(surroundViewCameras.fd, "PARK");
 
         for(int i=0; i<30; i++){
             memset(buffer, 0, sizeof buffer);
@@ -56,30 +57,33 @@ void mainParkAssist(int mode){
             memset(surroundViewCameras.buffer, 0, sizeof surroundViewCameras.buffer);
             if (readLine(surroundViewCameras.fd, surroundViewCameras.buffer) > 0){
                 writeLine(sock, surroundViewCameras.buffer);
-                // per debuggare commantare i writeline di bytesRead
                 writeLine(logPA, surroundViewCameras.buffer);
+                // per debuggare commentare i writeline di bytesRead
             }
             if(bytesRead < 8) continue;
-            // writeLine(sock, buffer);
-            // writeLine(logPA, buffer);
+            writeLine(sock, buffer);
+            writeLine(logPA, buffer);
             sleep(1);
         }
 
         writeLine(sock, "END PARK");
         writeLine(logPA, "END PARK");
+        kill(pidSVC, SIGUSR1);
     }
 
     termHandlerPA(0);
 }
 
-void executeSVC(){
+int executeSVC(int mode){
     int pid;
     // inizializzazione surroundViewCamera
     pid = fork();
     if (pid == 0){ 
-        mainSurroundViewCameras(N_SVC);
+        mainSurroundViewCameras(mode);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
+
+    return pid;
 }
 
 void termHandlerPA(int sig){
