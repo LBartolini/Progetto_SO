@@ -40,11 +40,10 @@ void mainForwardFacingRadar(int mode){
     while (1){
         memset(buffer, 0, sizeof buffer);
         bytesRead = readByte(fdURandom, buffer); // Legge 8 bytes da urandom
-        if (bytesRead == 8){
-            if (writeLine(logFFR, buffer) == -1) exit(EXIT_FAILURE);
-            writeLine(sock, buffer); // Invia i dati alla ECU
-            writeLine(logFFR, buffer); // Invia i dati al logger
-        }
+        if (bytesRead < 8) continue;
+        
+        writeLine(sock, buffer); // Invia i dati alla ECU
+        writeLine(logFFR, buffer); // Invia i dati al logger
         sleep(1);
     }
     termHandlerFFR(0);

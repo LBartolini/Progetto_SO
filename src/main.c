@@ -45,6 +45,8 @@ int main(int argc, char *argv[]){
     signal(SIGUSR1, inputHandler);
     signal(SIGTERM, termHandler);
 
+    if (argc < 2) exit(EXIT_FAILURE);
+
     if(strcmp(argv[1], "NORMALE")==0){
         mode=NORMALE;
     }else if(strcmp(argv[1], "ARTIFICIALE")==0){
@@ -207,7 +209,7 @@ void centralECU(){
     signal(SIGUSR2, throttleBrokenHandler);
     int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
-    for(int i=0; i<NUM_COMPONENTI-2; i++){ // NUM_COMPONENTI-1 perchè il componente InputHMI non deve connettersi alla socket
+    for(int i=0; i<NUM_COMPONENTI-2; i++){ // NUM_COMPONENTI-2 perchè il componente InputHMI non deve connettersi alla socket e neanche SVC
         struct CompConnection tempCompConnection;
 
         tempCompConnection = connectToComponent(mainSocket);
