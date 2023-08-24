@@ -30,10 +30,12 @@ struct Componente componenti[NUM_COMPONENTI];
 void inputHandler(int);
 void termHandler(int);
 void setupLogFiles();
-void centralECU();
+void centralECU(int);
 void initProcesses(int);
 void removeAllProcesses();
 int checkCodiciParcheggio(char*);
+void removeAllProcessessExceptPA();
+int initPA(int mode);
 
 int main(int argc, char *argv[]){
     int mode;
@@ -58,7 +60,7 @@ int main(int argc, char *argv[]){
     _log = open(ECU_LOG, O_WRONLY);
     if(_log == -1) exit(EXIT_FAILURE);
     
-    centralECU();
+    centralECU(mode);
     
     termHandler(0);
 }
@@ -95,6 +97,33 @@ void removeAllProcesses(){
     }
 }
 
+void setupComponent(int pos, int pid, char* nome){
+    strcpy(componenti[pos].nome, nome);
+    componenti[pos].pid = pid;
+    memset(componenti[pos].buffer, 0, sizeof componenti[pos].buffer);
+}
+
+int initPA(int mode){
+    int pid;
+    // inizializzazione parkAssist
+    pid = fork();
+    if (pid == 0){ 
+        mainParkAssist(mode);
+        exit(EXIT_SUCCESS);
+    }else if(pid < 0) exit(EXIT_FAILURE);
+    setupComponent(N_PA, pid, PA);
+    removeAllProcessessExceptPA();
+    return pid;
+}
+
+void removeAllProcessessExceptPA(){
+    kill(componenti[N_FWC].pid, SIGTERM);
+    kill(componenti[N_FFR].pid, SIGTERM);
+    kill(componenti[N_SBW].pid, SIGTERM);
+    kill(componenti[N_BBW].pid, SIGTERM);
+    kill(componenti[N_TC].pid, SIGTERM);
+}
+
 int createLog(char *path){
     int fd = open(path, O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1) exit(EXIT_FAILURE);
@@ -122,12 +151,6 @@ void setupLogFiles(){
             createLog(PA_LOG))){
         exit(EXIT_SUCCESS);
     }
-}
-
-void setupComponent(int pos, int pid, char* nome){
-    strcpy(componenti[pos].nome, nome);
-    componenti[pos].pid = pid;
-    memset(componenti[pos].buffer, 0, sizeof componenti[pos].buffer);
 }
 
 void initProcesses(int mode){
@@ -162,12 +185,12 @@ void initProcesses(int mode){
     setupComponent(N_FWC, pid, FWC);
 
     // inizializzazione ParkAssist
-    pid = fork();
-    if (pid == 0){ 
-        mainParkAssist(mode);
-        exit(EXIT_SUCCESS);
-    }else if(pid < 0) exit(EXIT_FAILURE);
-    setupComponent(N_PA, pid, PA);
+    // pid = fork();
+    // if (pid == 0){ 
+    //     mainParkAssist(mode);
+    //     exit(EXIT_SUCCESS);
+    // }else if(pid < 0) exit(EXIT_FAILURE);
+    // setupComponent(N_PA, pid, PA);
 
     // inizializzazione SteerByWire
     pid = fork();
@@ -204,12 +227,12 @@ void throttleBrokenHandler(int sig){
     termHandler(EXIT_SUCCESS);
 }
 
-void centralECU(){
+void centralECU(int mode){
     // controllo signal in caso di mancato funzionamento dell'accelleratore
     signal(SIGUSR2, throttleBrokenHandler);
     int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
-    for(int i=0; i<NUM_COMPONENTI-2; i++){ // NUM_COMPONENTI-2 perchè il componente InputHMI non deve connettersi alla socket e neanche SVC
+    for(int i=0; i<NUM_COMPONENTI-3; i++){ // NUM_COMPONENTI-3 perchè il componente InputHMI non deve connettersi alla socket e neanche SVC e PA
         struct CompConnection tempCompConnection;
 
         tempCompConnection = connectToComponent(mainSocket);
@@ -219,9 +242,11 @@ void centralECU(){
             pos=N_BBW;
         }else if(strcmp(tempCompConnection.nome, FWC)==0) {
             pos=N_FWC;
-        }else if(strcmp(tempCompConnection.nome, PA)==0) {
-            pos=N_PA;
-        }else if(strcmp(tempCompConnection.nome, SBW)==0) {
+        }
+        // else if(strcmp(tempCompConnection.nome, PA)==0) {
+        //     pos=N_PA;
+        // }
+        else if(strcmp(tempCompConnection.nome, SBW)==0) {
             pos=N_SBW;
         }else if(strcmp(tempCompConnection.nome, TC)==0) {
             pos=N_TC;
@@ -247,7 +272,10 @@ void centralECU(){
                 velocita -= 5;
                 sleep(1);
             }
-
+            int pidPA = initPA(mode);
+            struct CompConnection tempCompConnection;
+            tempCompConnection = connectToComponent(mainSocket);
+            componenti[N_PA].fdSocket = tempCompConnection.fd;
             writeLine(componenti[N_PA].fdSocket, "PARK");
             writeLine(_log, "PA:PARK");
             
@@ -255,7 +283,6 @@ void centralECU(){
             do{
                 memset(componenti[N_PA].buffer, 0, sizeof componenti[N_PA].buffer);
                 readLine(componenti[N_PA].fdSocket, componenti[N_PA].buffer);
-
                 // controlla se il buffer contiene la stringa, 
                 // in tal caso la procedura di parcheggio non ha funzionato 
                 // e deve essere tentata nuovamente
