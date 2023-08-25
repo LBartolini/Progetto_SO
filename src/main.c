@@ -184,14 +184,6 @@ void initProcesses(int mode){
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FWC, pid, FWC);
 
-    // inizializzazione ParkAssist
-    // pid = fork();
-    // if (pid == 0){ 
-    //     mainParkAssist(mode);
-    //     exit(EXIT_SUCCESS);
-    // }else if(pid < 0) exit(EXIT_FAILURE);
-    // setupComponent(N_PA, pid, PA);
-
     // inizializzazione SteerByWire
     pid = fork();
     if (pid == 0){ 
@@ -243,9 +235,6 @@ void centralECU(int mode){
         }else if(strcmp(tempCompConnection.nome, FWC)==0) {
             pos=N_FWC;
         }
-        // else if(strcmp(tempCompConnection.nome, PA)==0) {
-        //     pos=N_PA;
-        // }
         else if(strcmp(tempCompConnection.nome, SBW)==0) {
             pos=N_SBW;
         }else if(strcmp(tempCompConnection.nome, TC)==0) {
@@ -276,7 +265,6 @@ void centralECU(int mode){
             struct CompConnection tempCompConnection;
             tempCompConnection = connectToComponent(mainSocket);
             componenti[N_PA].fdSocket = tempCompConnection.fd;
-            writeLine(componenti[N_PA].fdSocket, "PARK");
             writeLine(_log, "PA:PARK");
             
             int parcheggioCompletato = 1;
@@ -288,9 +276,11 @@ void centralECU(int mode){
                 // e deve essere tentata nuovamente
                 if(checkCodiciParcheggio(componenti[N_PA].buffer)) {
                     writeLine(_log, "Parcheggio errato!");
+                    kill(componenti[N_PA].pid, SIGTERM);
                     parcheggioCompletato = 0;
+                    break;
                 }
-                sleep(1);
+                usleep(200000);
             }while(strcmp(componenti[N_PA].buffer, "END PARK")!=0);
 
             if(parcheggioCompletato){
@@ -339,7 +329,6 @@ void centralECU(int mode){
             }
 
         }
-        
-        usleep(300000);
+        usleep(200000);
     }
 }
