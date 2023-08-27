@@ -215,14 +215,16 @@ int checkCodiciParcheggio(char *buffer){
 }
 
 void throttleBrokenHandler(int sig){
-    writeLine(_log, "TC:SEGNALE TOTALE DI ARRESTO (da TC)");
+    velocita = 0;
+    writeLine(_log, "TC:SEGNALE TOTALE DI ARRESTO");
     termHandler(EXIT_SUCCESS);
 }
 
 void centralECU(int mode){
+    int velocitaRichiesta=0;
+
     // controllo signal in caso di mancato funzionamento dell'accelleratore
     signal(SIGUSR2, throttleBrokenHandler);
-    int velocitaRichiesta=0;
     writeLine(_log, "Inizio connessione ai Componenti");
     for(int i=0; i<NUM_COMPONENTI-3; i++){ // NUM_COMPONENTI-3 perchè il componente InputHMI non deve connettersi alla socket e neanche SVC e PA
         struct CompConnection tempCompConnection;
@@ -234,14 +236,13 @@ void centralECU(int mode){
             pos=N_BBW;
         }else if(strcmp(tempCompConnection.nome, FWC)==0) {
             pos=N_FWC;
-        }
-        else if(strcmp(tempCompConnection.nome, SBW)==0) {
+        }else if(strcmp(tempCompConnection.nome, SBW)==0) {
             pos=N_SBW;
         }else if(strcmp(tempCompConnection.nome, TC)==0) {
             pos=N_TC;
         }else if(strcmp(tempCompConnection.nome, FFR)==0){
             pos=N_FFR;
-        }else exit(0);
+        }else exit(EXIT_FAILURE);
 
         componenti[pos].fdSocket = tempCompConnection.fd;
 
