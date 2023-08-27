@@ -34,7 +34,7 @@ void mainForwardFacingRadar(int mode){
         fdURandom = open(INPUT_NORMALE_U, O_RDONLY);
     }else if(mode==ARTIFICIALE){
         fdURandom = open(INPUT_ARTIFICIALE_U, O_RDONLY);
-    }else exit(0);
+    }else exit(EXIT_FAILURE);
     if(fdURandom == -1) exit(EXIT_FAILURE);
 
     while (1){

@@ -203,7 +203,7 @@ void initProcesses(int mode){
     // inizializzazione forwardFacingRadar
     pid = fork();
     if (pid == 0){ 
-        mainForwardFacingRadar(N_FFR);
+        mainForwardFacingRadar(mode);
         exit(EXIT_SUCCESS);
     }else if(pid < 0) exit(EXIT_FAILURE);
     setupComponent(N_FFR, pid, FFR);
