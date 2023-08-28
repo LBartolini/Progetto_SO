@@ -19,13 +19,14 @@
 #include "utils.h"
 
 int sock, logTC;
-char buffer[100], toLog[60];
+time_t timer;
+struct tm* tm_info;
+char buffer[100], toLog[64];
 
 void termHandlerTC(int);
 int throttleCrash();
 
 void mainThrottleControl(){
-    char toAppend[1];
     signal(SIGTERM, termHandlerTC);
 
     logTC = open(TC_LOG, O_WRONLY);
@@ -37,22 +38,16 @@ void mainThrottleControl(){
     writeLine(logTC, "Connessione stabilita con successo");
 
     while(1){
-        strcpy(toLog, "AUMENTO ");
         memset(buffer, 0, sizeof buffer);
-        memset(toAppend, 0, sizeof toAppend);
         readLine(sock, buffer);
         if(throttleCrash()){
             kill(getppid(), SIGUSR2);
             break;
         }
-        int i = 11;
-        while(buffer[i] != '\0'){
-            sprintf(toAppend, "%c", buffer[i]);
-            strcat(toLog, toAppend);
-            i++;
-        }
-        sprintf(buffer, "%d:%s", (int)time(NULL), toLog);
-        writeLine(logTC, buffer);
+        timer = time(NULL);
+        tm_info = localtime(&timer);
+        strftime(toLog, 64, "%Y-%m-%d %H:%M:%S - AUMENTO 5", tm_info);
+        writeLine(logTC, toLog);
     }
 
     termHandlerTC(0);

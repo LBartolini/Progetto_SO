@@ -17,6 +17,8 @@
 #include "utils.h"
 
 int sock, logBBW;
+time_t timer;
+struct tm* tm_info;
 char buffer[60], toLog[100];
 
 void termHandlerBBW(int);
@@ -39,7 +41,11 @@ void mainBrakeByWire(){
         memset(toLog, 0, sizeof toLog);
 
         readLine(sock, buffer);
-        sprintf(toLog, "%d:%s", (int)time(NULL), buffer);
+
+        timer = time(NULL);
+        tm_info = localtime(&timer);
+        strftime(toLog, 26, "%Y-%m-%d %H:%M:%S - ", tm_info);
+        strcat(toLog, buffer);
         writeLine(logBBW, toLog);
     }
     
