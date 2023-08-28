@@ -52,7 +52,6 @@ void mainParkAssist(int mode){
         if (readLine(surroundViewCameras.fd, surroundViewCameras.buffer) > 0){
             writeLine(sock, surroundViewCameras.buffer);
             writeLine(logPA, surroundViewCameras.buffer);
-            // per debuggare commentare i writeline di bytesRead
         }
         if(bytesRead < 8) continue;
         writeLine(sock, buffer);
