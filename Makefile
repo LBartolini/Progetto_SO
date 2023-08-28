@@ -6,7 +6,6 @@ bin/main: obj/main.o obj/inputHMI.o obj/utils.o obj/brakeByWire.o obj/frontWinds
 
 bin/output: obj/outputHMI.o obj/utils.o
 	cc -o $@ $^
-	# touch log/ECU.log
 
 obj/%.o: src/%.c
 	cc -c $< -I include -o $@
