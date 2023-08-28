@@ -36,7 +36,7 @@ void mainParkAssist(int mode){
 
     pidSVC = executeSVC(mode);
     struct CompConnection surroundViewCameras;
-    fdServer = initServerSocket("parkAssist");
+    fdServer = initServerSocket(PARK_ASSIST);
     surroundViewCameras = connectToComponent(fdServer);
 
     writeLine(logPA, "Connessione alla ECU");
